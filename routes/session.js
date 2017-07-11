@@ -9,58 +9,53 @@ router.post('/getSessions', function(req, res, next) {
   query.find().then(function (results) {
     if(results.length > 0){
       var resArr = [];
-      function *action() {
-        for(var l in results){
-          if(results[l].attributes.sessionType==0){
-            var userId = '';
-            for(var j in results[l].attributes.members){
-              if(results[l].attributes.members[j] != myself){
-                userId = results[l].attributes.members[j];
-                break;
-              }
+      for(var l in results){
+        if(results[l].attributes.sessionType==0){
+          var userId = '';
+          for(var j in results[l].attributes.members){
+            if(results[l].attributes.members[j] != myself){
+              userId = results[l].attributes.members[j];
+              break;
             }
-            (function(l){
-              new Promise(function(resolve, reject){
-                var response = {};
-                var query = new AV.Query('wx_users');
-                query.get(userId).then(function (data) {
-                  var sessionId = results[l].id;
-                  
-                  response.userIcon = data.attributes.headimg;
-                  response.name = data.attributes.nickname;
-                  response.sessionId = sessionId;
-      
-                  var query1 = new AV.Query('wx_sessions');
-                  query1.equalTo('sessionId', sessionId);
-                  query1.descending('createdAt');
-                  return query1.first();
-                }).then(function(data){
-                  if(data){
-                    response.content = data.attributes.content;
-                    response.timer = data.createdAt;
-                  }else{
-                    response.content = '';
-                    response.timer = '';
-                  }
-                  resolve(response);
-                });
-              }).then(function(response){
-                resArr.push(response);
-                it.next();
+          }
+          (function(l){
+            new Promise(function(resolve, reject){
+              var response = {};
+              var query = new AV.Query('wx_users');
+              query.get(userId).then(function (data) {
+                var sessionId = results[l].id;
+                
+                response.userIcon = data.attributes.headimg;
+                response.name = data.attributes.nickname;
+                response.sessionId = sessionId;
+    
+                var query1 = new AV.Query('wx_sessions');
+                query1.equalTo('sessionId', sessionId);
+                query1.descending('createdAt');
+                return query1.first();
+              }).then(function(data){
+                if(data){
+                  response.content = data.attributes.content;
+                  response.timer = data.createdAt;
+                }else{
+                  response.content = '';
+                  response.timer = '';
+                }
+                resolve(response);
               });
-            })(l);
-            yield;
-          }else{}
-        }
-        
-        res.send({
-          type: 1,
-          msg: '获取成功',
-          data: resArr
-        })
+            }).then(function(response){
+              resArr.push(response);
+              if(resArr.length == results.length){
+                res.send({
+                  type: 1,
+                  msg: '获取成功',
+                  data: resArr
+                })
+              }
+            });
+          })(l);
+        }else{}
       }
-      var it = action();
-      it.next();
     }else{
       res.send({
         type: 0,
