@@ -15,3 +15,6 @@
   1. 使用websocket实现实时聊天的功能
   2. 使用leancloud实现数据存储，并且托管后台代码
   3. 用户端的代码可以看[这里](https://github.com/j20041426/wechat)
+
+
+ps. 可能由于websocket库的选择问题，部署到leancloud上时websocket并没有生效。这个问题留到下次更新时解决。
